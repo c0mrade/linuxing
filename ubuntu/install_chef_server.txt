@@ -1,0 +1,33 @@
+#!/bin/sh
+# Developer City
+# www.dcorp.co
+# Needs to be a semi-good machine, can't be them sloppy ones with 512 MB ram, it's going to shit itself running this
+
+Download latest version from -> https://downloads.chef.io/chef-server/ubuntu/
+
+wget -P /tmp/ https://packagecloud.io/chef/stable/packages/ubuntu/trusty/chef-server-core_12.3.1-1_amd64.deb/download
+# after download filename is download
+mv /tmp/download /tmp/chef-server-core_12.3.1-1_amd64.deb
+dpkg -i /tmp/chef-server-core_12.3.1-1_amd64.deb 
+chef-server-ctl reconfigure
+openssl req -new -x509 -extensions v3_ca -keyout cakey.pem -out cacert.pem -days 3650
+chmod 600 cakey.pem 
+mv cakey.pem /etc/ssl/private/
+mv cacert.pem /etc/ssl/certs/
+# create administrative user
+chef-server-ctl user-create c0mrade Admin User office@dcorp.co 'dontstoptheparty' --filename=/etc/ssl/certs/cacert.pem 
+# create organization
+chef-server-ctl org-create dc 'Developer City' --association_user c0mrade --filename=/etc/ssl/certs/cacert.pem
+
+chef-server-ctl install opscode-manage
+chef-server-ctl reconfigure
+opscode-manage-ctl reconfigure
+
+# reporting
+chef-server-ctl install opscode-reporting
+
+# after anything new installed reload
+chef-server-ctl reconfigure
+opscode-reporting-ctl reconfigure
+
+That's all folks!
